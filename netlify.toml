@@ -14,7 +14,7 @@
 
 [build.environment]
   # Node version for builds
-  NODE_VERSION = "18"
+  NODE_VERSION = "22"
 
 # Headers for security and performance
 [[headers]]

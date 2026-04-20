@@ -5,6 +5,9 @@
   "description": "Smart Code Review & Learning Platform for beginner programmers",
   "author": "Aman Pokhariya",
   "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
