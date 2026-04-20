@@ -36,7 +36,9 @@ export class CodeAnalyzer {
       warnings.push({
         type: 'warning',
         message: 'Using "var" is discouraged. Consider using "const" or "let".',
-        severity: 'low'
+        severity: 'low',
+        fixType: 'replaceVar',
+        fixDescription: 'Replace var declarations with let.'
       });
     }
 
@@ -44,7 +46,9 @@ export class CodeAnalyzer {
       issues.push({
         type: 'complexity',
         message: 'High cyclomatic complexity detected. Consider refactoring nested conditions.',
-        severity: 'medium'
+        severity: 'medium',
+        fixType: 'refactorNesting',
+        fixDescription: 'Review nested conditions and split them into smaller helper functions.'
       });
       metrics.complexity += 2;
     }
@@ -53,7 +57,9 @@ export class CodeAnalyzer {
       warnings.push({
         type: 'warning',
         message: 'Found console.log() statements. Remove before production.',
-        severity: 'low'
+        severity: 'low',
+        fixType: 'removeConsole',
+        fixDescription: 'Remove console.log statements from the code.'
       });
     }
 
@@ -61,7 +67,9 @@ export class CodeAnalyzer {
       warnings.push({
         type: 'style',
         message: 'Inconsistent indentation detected.',
-        severity: 'low'
+        severity: 'low',
+        fixType: 'normalizeIndent',
+        fixDescription: 'Normalize indentation to consistent two-space formatting.'
       });
     }
 

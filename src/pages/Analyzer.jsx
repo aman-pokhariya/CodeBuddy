@@ -23,8 +23,9 @@ function Analyzer() {
   const { saveAnalysis } = useApp();
 
   // Debounced analysis would be nice but let's make the button click for now
-  const handleAnalyze = useCallback(() => {
-    if (!code.trim()) {
+  const handleAnalyze = useCallback((sourceCode = code) => {
+    const targetCode = sourceCode || code;
+    if (!targetCode.trim()) {
       setErrorMessage('Please enter some code to analyze');
       return;
     }
@@ -35,7 +36,7 @@ function Analyzer() {
     // Simulate async analysis (in production, this would call an API)
     setTimeout(() => {
       try {
-        const result = CodeAnalyzer.analyze(code);
+        const result = CodeAnalyzer.analyze(targetCode);
         const recommendations = CodeAnalyzer.getRecommendations(result);
         
         setAnalysis({
@@ -51,6 +52,37 @@ function Analyzer() {
       }
     }, 500);
   }, [code, language]);
+
+  const normalizeIndentation = (text) => {
+    return text
+      .split('\n')
+      .map(line => line.replace(/\t/g, '  ').replace(/^\s+/, match => ' '.repeat(Math.floor(match.length / 2) * 2)))
+      .join('\n');
+  };
+
+  const handleApplyFix = useCallback((fixType) => {
+    let fixedCode = code;
+
+    switch (fixType) {
+      case 'replaceVar':
+        fixedCode = fixedCode.replace(/\bvar\s+/g, 'let ');
+        break;
+      case 'removeConsole':
+        fixedCode = fixedCode.replace(/console\.log\([^)]*\);?/g, '');
+        break;
+      case 'normalizeIndent':
+        fixedCode = normalizeIndentation(fixedCode);
+        break;
+      case 'refactorNesting':
+        setErrorMessage('This issue requires manual refactoring. Review the recommendation for guidance.');
+        return;
+      default:
+        return;
+    }
+
+    setCode(fixedCode);
+    handleAnalyze(fixedCode);
+  }, [code, handleAnalyze]);
 
   // Memoized recommendations for performance
   const displayedRecommendations = useMemo(() => {
@@ -245,6 +277,18 @@ function Analyzer() {
                           <Badge variant="error" size="sm" className="mt-2">
                             {issue.severity}
                           </Badge>
+                          {issue.fixType && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => handleApplyFix(issue.fixType)}
+                              >
+                                Fix Issue
+                              </Button>
+                              <p className="text-gray-300 text-xs italic">{issue.fixDescription}</p>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -262,6 +306,18 @@ function Analyzer() {
                       {analysis.warnings.map((warning, idx) => (
                         <div key={idx} className="p-3 bg-yellow-900 bg-opacity-20 border border-yellow-500 rounded-lg">
                           <p className="text-yellow-200 font-semibold text-sm">{warning.message}</p>
+                          {warning.fixType && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => handleApplyFix(warning.fixType)}
+                              >
+                                Fix Warning
+                              </Button>
+                              <p className="text-gray-300 text-xs italic">{warning.fixDescription}</p>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -286,16 +342,37 @@ function Analyzer() {
                   </Card>
                 )}
 
-                {/* Save Analysis Button */}
+                {/* Action Buttons */}
                 {analysis && (
-                  <Button
-                    variant="primary"
-                    onClick={() => setShowSaveModal(true)}
-                    className="w-full flex items-center justify-center gap-2"
-                  >
-                    <Save size={16} />
-                    Save Analysis
-                  </Button>
+                  <div className="space-y-3">
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        const fixable = [...analysis.issues, ...analysis.warnings].some(item => item.fixType);
+                        if (fixable) {
+                          const fixTypes = [...analysis.issues, ...analysis.warnings]
+                            .filter(item => item.fixType)
+                            .map(item => item.fixType);
+                          if (fixTypes.includes('replaceVar')) handleApplyFix('replaceVar');
+                          else if (fixTypes.includes('removeConsole')) handleApplyFix('removeConsole');
+                          else if (fixTypes.includes('normalizeIndent')) handleApplyFix('normalizeIndent');
+                        } else {
+                          setErrorMessage('No auto-fixable issues detected.');
+                        }
+                      }}
+                      className="w-full flex items-center justify-center gap-2"
+                    >
+                      Fix Auto-Fixable Issues
+                    </Button>
+                    <Button
+                      variant="primary"
+                      onClick={() => setShowSaveModal(true)}
+                      className="w-full flex items-center justify-center gap-2"
+                    >
+                      <Save size={16} />
+                      Save Analysis
+                    </Button>
+                  </div>
                 )}
               </>
             )}
