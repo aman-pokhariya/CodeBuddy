@@ -6,9 +6,9 @@ import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-// import Dashboard from './pages/Dashboard';
-// import Analyzer from './pages/Analyzer';
-// import History from './pages/History';
+import Dashboard from './pages/Dashboard';
+import Analyzer from './pages/Analyzer';
+import History from './pages/History';
 import './App.css';
 
 function AppContent() {
@@ -25,10 +25,10 @@ function AppContent() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         
-        {/* Protected Routes - to be implemented */}
-        {/* <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} /> */}
-        {/* <Route path="/analyzer" element={<ProtectedRoute><Analyzer /></ProtectedRoute>} /> */}
-        {/* <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} /> */}
+        {/* Protected Routes */}
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/analyzer" element={<ProtectedRoute><Analyzer /></ProtectedRoute>} />
+        <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
         
         <Route path="*" element={<div className="flex items-center justify-center h-screen text-white">Page not found</div>} />
       </Routes>
