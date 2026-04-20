@@ -63,24 +63,35 @@ export class CodeAnalyzer {
       });
     }
 
-    if (code.match(/\s{4,}/g)) {
+    // Check for mixed indentation (tabs and spaces together)
+    if (code.match(/^\t+ /m) || code.match(/^ +\t/m)) {
       warnings.push({
         type: 'style',
-        message: 'Inconsistent indentation detected.',
+        message: 'Mixed tabs and spaces detected. Use consistent indentation.',
         severity: 'low',
         fixType: 'normalizeIndent',
         fixDescription: 'Normalize indentation to consistent two-space formatting.'
       });
     }
 
-    // Check for performance issues
-    if (code.match(/\.map\(.*\.filter\(|\.filter\(.*\.map\(/)) {
-      issues.push({
-        type: 'performance',
-        message: 'Chained map/filter operations. Consider combining for better performance.',
-        severity: 'medium'
+    // Check for unused variables
+    const unusedVars = varMatches.filter(varDecl => {
+      const varName = varDecl.match(/\w+$/)[0];
+      const pattern = new RegExp(`\\b${varName}\\b`, 'g');
+      const matches = code.match(pattern) || [];
+      return matches.length === 1; // Only declared, not used
+    });
+
+    if (unusedVars.length > 0) {
+      warnings.push({
+        type: 'warning',
+        message: `Found ${unusedVars.length} potentially unused variable(s).`,
+        severity: 'low',
+        fixType: null,
+        fixDescription: 'Review and remove unused declarations.'
       });
     }
+
 
     // Estimate time complexity
     const timeComplexity = this.estimateTimeComplexity(code);

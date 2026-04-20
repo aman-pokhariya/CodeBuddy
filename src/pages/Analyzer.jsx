@@ -62,16 +62,26 @@ function Analyzer() {
 
   const handleApplyFix = useCallback((fixType) => {
     let fixedCode = code;
+    let fixedSomething = false;
 
     switch (fixType) {
       case 'replaceVar':
-        fixedCode = fixedCode.replace(/\bvar\s+/g, 'let ');
+        if (fixedCode.includes('var ')) {
+          fixedCode = fixedCode.replace(/\bvar\s+/g, 'let ');
+          fixedSomething = true;
+        }
         break;
       case 'removeConsole':
-        fixedCode = fixedCode.replace(/console\.log\([^)]*\);?/g, '');
+        if (fixedCode.match(/console\.log/)) {
+          fixedCode = fixedCode.replace(/console\.log\([^)]*\);?\n?/g, '');
+          fixedSomething = true;
+        }
         break;
       case 'normalizeIndent':
-        fixedCode = normalizeIndentation(fixedCode);
+        // Replace tabs with spaces
+        const before = fixedCode;
+        fixedCode = fixedCode.replace(/\t/g, '  ');
+        fixedSomething = fixedCode !== before;
         break;
       case 'refactorNesting':
         setErrorMessage('This issue requires manual refactoring. Review the recommendation for guidance.');
@@ -80,7 +90,14 @@ function Analyzer() {
         return;
     }
 
+    if (!fixedSomething) {
+      setErrorMessage('Nothing to fix - issue may have been resolved already.');
+      return;
+    }
+
     setCode(fixedCode);
+    setSuccessMessage(`Issue fixed! Re-analyzing...`);
+    
     // Re-analyze the fixed code
     setTimeout(() => {
       try {
@@ -92,7 +109,6 @@ function Analyzer() {
           language,
           timestamp: new Date().toISOString()
         });
-        setSuccessMessage('Issue fixed successfully!');
       } catch (err) {
         setErrorMessage('Error re-analyzing code: ' + err.message);
       }
