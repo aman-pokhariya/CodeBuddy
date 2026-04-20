@@ -1,16 +1,17 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getAnalytics } from 'firebase/analytics';
 
 // Firebase configuration
-// TODO: Replace with your Firebase config from Firebase Console
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDemoKeyForDevelopment",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "codebuddy-demo.firebaseapp.com",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "codebuddy-demo",
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "codebuddy-demo.appspot.com",
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789:web:abc123def456"
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789:web:abc123def456",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-DEMO123"
 };
 
 // Initialize Firebase
@@ -21,5 +22,8 @@ export const auth = getAuth(app);
 
 // Initialize Firestore
 export const db = getFirestore(app);
+
+// Initialize Analytics (only in production)
+export const analytics = getAnalytics(app);
 
 export default app;
