@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo } from 'react';
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { Button, Card, Badge, Modal, ErrorAlert, SuccessAlert, LoadingSpinner } from '../components';
@@ -81,13 +81,36 @@ function Analyzer() {
     }
 
     setCode(fixedCode);
-    handleAnalyze(fixedCode);
-  }, [code, handleAnalyze]);
+    // Re-analyze the fixed code
+    setTimeout(() => {
+      try {
+        const result = CodeAnalyzer.analyze(fixedCode);
+        const recommendations = CodeAnalyzer.getRecommendations(result);
+        setAnalysis({
+          ...result,
+          recommendations,
+          language,
+          timestamp: new Date().toISOString()
+        });
+        setSuccessMessage('Issue fixed successfully!');
+      } catch (err) {
+        setErrorMessage('Error re-analyzing code: ' + err.message);
+      }
+    }, 300);
+  }, [code, language]);
 
   // Memoized recommendations for performance
   const displayedRecommendations = useMemo(() => {
     return analysis?.recommendations || [];
   }, [analysis]);
+
+  // Auto-dismiss success messages
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(''), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
   const handleSaveAnalysis = useCallback(async () => {
     if (!saveTitle.trim()) {
