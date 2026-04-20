@@ -16,10 +16,19 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Code splitting strategy
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'firebase-vendor': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-          'ui-vendor': ['recharts', 'lucide-react']
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor';
+            }
+            if (id.includes('firebase')) {
+              return 'firebase-vendor';
+            }
+            if (id.includes('recharts') || id.includes('lucide-react')) {
+              return 'ui-vendor';
+            }
+            return 'vendor';
+          }
         }
       }
     },
